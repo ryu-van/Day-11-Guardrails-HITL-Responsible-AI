@@ -7,6 +7,21 @@ import os
 def setup_api_key():
     """Load Google API key from environment or prompt."""
     if "GOOGLE_API_KEY" not in os.environ:
+        # Try to read from a local .env file in parent directories
+        for path in [".env", "../.env", "../../.env"]:
+            try:
+                if os.path.exists(path):
+                    with open(path, "r", encoding="utf-8") as f:
+                        for line in f:
+                            if line.startswith("GOOGLE_API_KEY="):
+                                os.environ["GOOGLE_API_KEY"] = line.strip().split("=", 1)[1].strip('"').strip("'")
+                                break
+                    if "GOOGLE_API_KEY" in os.environ:
+                        break
+            except Exception:
+                pass
+
+    if "GOOGLE_API_KEY" not in os.environ:
         os.environ["GOOGLE_API_KEY"] = input("Enter Google API Key: ")
     os.environ["GOOGLE_GENAI_USE_VERTEXAI"] = "0"
     print("API key loaded.")
